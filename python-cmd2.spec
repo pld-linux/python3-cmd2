@@ -8,7 +8,7 @@
 Summary:	cmd2 - a tool for building interactive command line applications in Python
 Name:		python-cmd2
 Version:	0.7.5
-Release:	4
+Release:	5
 License:	MIT
 Group:		Libraries/Python
 Source0:	https://pypi.python.org/packages/99/18/0bfe8240ffaebd28b1bce5a48170404e32bc1de6e640c8e7f37f1e522edb/cmd2-%{version}.tar.gz
