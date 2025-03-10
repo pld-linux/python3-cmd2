@@ -9,7 +9,7 @@ Summary(pl.UTF-8):	cmd2 - narzędzie do tworzenia interaktywnych aplikacji linii
 Name:		python-cmd2
 # keep 0.8.x here for python2 support
 Version:	0.8.9
-Release:	1
+Release:	2
 License:	MIT
 Group:		Libraries/Python
 Source0:	https://files.pythonhosted.org/packages/source/c/cmd2/cmd2-%{version}.tar.gz
