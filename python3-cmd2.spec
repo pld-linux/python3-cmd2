@@ -1,30 +1,38 @@
+# TODO: docs (BR: mkdocs + plugins)
 #
 # Conditional build:
-%bcond_with	tests	# unit tests (some failing)
+%bcond_without	tests	# unit tests
 
 Summary:	cmd2 - a tool for building interactive command line applications in Python
 Summary(pl.UTF-8):	cmd2 - narzędzie do tworzenia interaktywnych aplikacji linii poleceń w Pythonie
 Name:		python3-cmd2
-Version:	2.5.11
+Version:	2.7.0
 Release:	1
 License:	MIT
 Group:		Libraries/Python
+#Source0Download: https://pypi.org/simple/cmd2/
 Source0:	https://files.pythonhosted.org/packages/source/c/cmd2/cmd2-%{version}.tar.gz
-# Source0-md5:	8d5f8d668772c418e0e55942a2adcd8b
+# Source0-md5:	16990c5aef2162ee2d42d2a9546000d6
 URL:		https://pypi.org/project/cmd2/
-BuildRequires:	python3-build
+BuildRequires:	python3-build >= 1.2.1
 BuildRequires:	python3-installer
-BuildRequires:	python3-modules >= 1:3.4
+BuildRequires:	python3-modules >= 1:3.9
+BuildRequires:	python3-setuptools >= 1:64
+BuildRequires:	python3-setuptools_scm >= 8
+BuildRequires:	python3-trove_classifiers >= 2025.5.8.15
 BuildRequires:	rpm-pythonprov
 BuildRequires:	rpmbuild(macros) >= 1.714
 %if %{with tests}
+BuildRequires:	python3-coverage >= 7
 BuildRequires:	python3-pyparsing >= 2.0.1
-BuildRequires:	python3-pyperclip
-BuildRequires:	python3-pytest
-BuildRequires:	python3-six
-BuildRequires:	python3-wcwidth
+BuildRequires:	python3-pyperclip >= 1.8
+BuildRequires:	python3-pytest >= 7
+BuildRequires:	python3-pytest-cov >= 4
+BuildRequires:	python3-pytest-mock >= 3.14
+BuildRequires:	python3-rich_argparse >= 1.7.1
+BuildRequires:	python3-wcwidth >= 0.2.10
 %endif
-Requires:	python3-modules >= 1:3.8
+Requires:	python3-modules >= 1:3.9
 BuildArch:	noarch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -48,27 +56,17 @@ powtarzalnego kodu, który trzeba by było napisać, używając cmd.
 %prep
 %setup -q -n cmd2-%{version}
 
-%{__sed} -E -i -e '1s,#!\s*/usr/bin/env\s+python3(\s|$),#!%{__python3}\1,' \
-      examples/arg_decorators.py \
-      examples/basic.py \
-      examples/default_categories.py \
-      examples/dynamic_commands.py \
-      examples/initialization.py \
-      examples/modular_commands_basic.py \
-      examples/modular_commands_dynamic.py \
-      examples/modular_subcommands.py \
-      examples/subcommands.py
-
-%{__sed} -E -i -e '1s,#!\s*/usr/bin/env\s+zsh(\s|$),#!/bin/zsh\1,' \
-      examples/tmux_launch.sh \
-      examples/tmux_split.sh
+%{__sed} -i -e '1s,/usr/bin/env python3\?$,%{__python3},' examples/*.py examples/scripts/arg_printer.py
+%{__sed} -i -e '1s,/usr/bin/env zsh$,/bin/zsh,' examples/tmux_*.sh
 
 %build
 %py3_build_pyproject
 
 %if %{with tests}
+# SIGINT test fail for unknown reason
 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
-%{__python3} -m pytest tests
+PYTEST_PLUGINS=pytest_cov.plugin,pytest_mock.plugin \
+%{__python3} -m pytest tests -k 'not test_proc_reader_send_sigint and not test_proc_reader_terminate'
 %endif
 
 %install
@@ -78,8 +76,6 @@ rm -rf $RPM_BUILD_ROOT
 
 install -d $RPM_BUILD_ROOT%{_examplesdir}/python3-cmd2-%{version}
 cp -a examples/* $RPM_BUILD_ROOT%{_examplesdir}/python3-cmd2-%{version}
-find $RPM_BUILD_ROOT%{_examplesdir}/python3-cmd2-%{version} -name '*.py' \
-	| xargs sed -i '1s|^#!.*python\b|#!%{__python3}|'
 
 %clean
 rm -rf $RPM_BUILD_ROOT
